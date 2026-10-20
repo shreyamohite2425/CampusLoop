@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101027">
+    <title>CampusLoop — Find What Matters</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/" class="brand">
+        <span class="brand-icon">C<span>↗</span></span>
+        <span>Campus<span class="brand-accent">Loop</span></span>
+    </a>
+    <div class="nav-links">
+        <a href="#items">Explore items</a>
+        <a href="#report">Report an item</a>
+        <a href="#items" class="nav-cta">Find something <span>↗</span></a>
+    </div>
+</nav>
+
+<header class="hero">
+    <div class="hero-glow glow-one"></div>
+    <div class="hero-glow glow-two"></div>
+    <div class="hero-content">
+        <div class="eyebrow"><span class="live-dot"></span> YOUR CAMPUS, CONNECTED</div>
+        <h1>Lost something?<br>Let's bring it <span class="gradient-text">back to you.</span></h1>
+        <p class="hero-description">
+            One campus. One community. A better way to reunite people
+            with the things that matter.
+        </p>
+        <div class="hero-actions">
+            <a href="#items" class="button button-primary">Explore items <span>↗</span></a>
+            <a href="#report" class="button button-glass">＋ Report an item</a>
+        </div>
+        <div class="hero-note"><span>✦</span> Made for students, powered by community.</div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="floating-card floating-top"><span>✦</span> Community powered</div>
+        <div class="hero-illustration">
+            <div class="illustration-ring"></div>
+            <div class="illustration-icon">⌕</div>
+            <div class="illustration-spark spark-one">✦</div>
+            <div class="illustration-spark spark-two">✧</div>
+        </div>
+        <div class="floating-card floating-bottom">
+            <span class="success-icon">✓</span>
+            <div><strong>One less thing to worry about</strong><small>Good things find their way home.</small></div>
+        </div>
+    </div>
+</header>
+
+<main class="page-container">
+
+    <section class="stats-grid" aria-label="CampusLoop statistics">
+        <article class="stat-card">
+            <div class="stat-icon purple">▦</div>
+            <div><p>Total listings</p><h2>{{ stats.total or 0 }}</h2><span>Across the community</span></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon orange">⌕</div>
+            <div><p>Items lost</p><h2>{{ stats.lost or 0 }}</h2><span>Waiting to be found</span></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon blue">✦</div>
+            <div><p>Items found</p><h2>{{ stats.found or 0 }}</h2><span>Ready to reunite</span></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon green">✓</div>
+            <div><p>Reunited</p><h2>{{ stats.recovered or 0 }}</h2><span>Happy endings</span></div>
+        </article>
+    </section>
+
+    <section class="section-heading" id="items">
+        <div>
+            <div class="section-kicker">THE COMMUNITY BOARD</div>
+            <h2>Lost, found & <span class="text-gradient">hopefully reunited.</span></h2>
+            <p>Browse listings or narrow things down to find your item.</p>
+        </div>
+        <a class="button button-dark" href="#report">＋ Create a listing</a>
+    </section>
+
+    <section class="filter-panel">
+        <form action="/" method="get" id="searchForm" class="search-form">
+            <span class="search-icon">⌕</span>
+            <input type="search" id="searchInput" name="q" value="{{ q }}"
+                   placeholder="Search by item name or description..."
+                   aria-label="Search items">
+            <button class="button button-primary search-button" type="submit">Search</button>
+        </form>
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="typeFilter">SHOW</label>
+                <select id="typeFilter">
+                    <option value="all">All listings</option>
+                    <option value="lost">Lost items</option>
+                    <option value="found">Found items</option>
+                    <option value="recovered">Recovered</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="categoryFilter">CATEGORY</label>
+                <select id="categoryFilter">
+                    <option value="all">All categories</option>
+                </select>
+            </div>
+            <span class="result-count" id="resultCount">
+                {{ items|length }} listing(s)
+            </span>
+        </div>
+    </section>
+
+    <section class="items-grid" id="itemsGrid">
+        {% for item in items %}
+        <article class="item-card"
+                 data-kind="{{ item.kind|lower }}"
+                 data-status="{{ item.status|lower }}"
+                 data-category="{{ item.category|lower }}"
+                 data-title="{{ item.title|lower }}"
+                 data-description="{{ item.description|lower }}"
+                 data-location="{{ item.location|lower }}">
+            <div class="item-card-top">
+                <span class="type-badge {{ 'lost-badge' if item.kind == 'Lost' else 'found-badge' }}">
+                    <span class="badge-dot"></span>{{ item.kind }}
+                </span>
+                {% if item.status == 'Recovered' %}
+                    <span class="status-badge recovered-badge">✓ Recovered</span>
+                {% else %}
+                    <span class="status-badge active-badge">● Active</span>
+                {% endif %}
+            </div>
+            <div class="item-symbol {{ 'symbol-lost' if item.kind == 'Lost' else 'symbol-found' }}">
+                {% if 'electronic' in item.category|lower or 'calculator' in item.title|lower or 'phone' in item.title|lower %}
+                    ◈
+                {% elif 'book' in item.category|lower or 'book' in item.title|lower %}
+                    ▤
+                {% elif 'key' in item.title|lower %}
+                    ⚿
+                {% elif 'bag' in item.title|lower %}
+                    ▱
+                {% elif 'card' in item.title|lower or 'id' in item.title|lower %}
+                    ▣
+                {% else %}
+                    ✧
+                {% endif %}
+            </div>
+            <div class="item-card-body">
+                <span class="item-category">{{ item.category }}</span>
+                <h3>{{ item.title }}</h3>
+                <p class="item-description">{{ item.description }}</p>
+                <div class="item-meta">
+                    <span>⌖ {{ item.location }}</span>
+                    <span>{{ item.date }}</span>
+                </div>
+            </div>
+            {% if item.status == 'Active' %}
+            <form class="recover-form" action="/recover/{{ item.id }}" method="post">
+                <button class="recover-button" type="submit">
+                    Mark as recovered <span>↗</span>
+                </button>
+            </form>
+            {% else %}
+            <div class="recovered-message">✓ This item has been reunited</div>
+            {% endif %}
+        </article>
+        {% else %}
+        <div class="empty-state server-empty">
+            <div class="empty-icon">⌕</div>
+            <h3>No listings yet</h3>
+            <p>Be the first to add an item to the community board.</p>
+            <a href="#report" class="button button-primary">Add an item</a>
+        </div>
+        {% endfor %}
+    </section>
+
+    <div class="empty-state" id="filterEmpty" hidden>
+        <div class="empty-icon">⌕</div>
+        <h3>No matching items</h3>
+        <p>Try another search or change your filters.</p>
+        <button class="button button-primary" id="resetFilters" type="button">Clear filters</button>
+    </div>
+
+    <section class="report-section" id="report">
+        <div class="report-copy">
+            <div class="section-kicker">BE THE REASON SOMEONE SMILES</div>
+            <h2>Found something?<br><span class="gradient-text">Make someone's day.</span></h2>
+            <p>Every listing makes it a little easier for a fellow student to find what they've lost.</p>
+            <div class="report-perk"><span>✓</span> Quick and simple listing</div>
+            <div class="report-perk"><span>✓</span> Searchable campus board</div>
+            <div class="report-perk"><span>✓</span> Community-powered reunions</div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-heading">
+                <div><span class="form-step">01 / NEW LISTING</span><h3>Tell us about it</h3></div>
+                <div class="form-heading-icon">＋</div>
+            </div>
+            <form action="/add" method="post" id="addForm">
+                <label for="title">Item name</label>
+                <input id="title" name="title" maxlength="100" placeholder="e.g. Black scientific calculator" required>
+
+                <label for="description">Description</label>
+                <textarea id="description" name="description" maxlength="500" placeholder="Describe the item so its owner can recognise it..." required></textarea>
+
+                <div class="form-two-column">
+                    <div><label for="category">Category</label>
+                        <input id="category" name="category" maxlength="50" placeholder="Electronics, Books..." required>
+                    </div>
+                    <div><label for="location">Campus location</label>
+                        <input id="location" name="location" maxlength="100" placeholder="Library, Canteen..." required>
+                    </div>
+                </div>
+
+                <div class="form-two-column">
+                    <div><label for="date">Date</label><input id="date" type="date" name="date" required></div>
+                    <div><label for="kind">Listing type</label>
+                        <select id="kind" name="kind" required>
+                            <option value="Lost">I lost something</option>
+                            <option value="Found">I found something</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="button button-primary submit-button">
+                    Publish listing <span>↗</span>
+                </button>
+                <p class="privacy-note">✦ Please don't include private personal information.</p>
+            </form>
+        </div>
+    </section>
+
+    <section class="bottom-banner">
+        <div class="banner-icon">✦</div>
+        <div><h3>Small things. Big relief.</h3><p>Let's make campus a little more connected, one item at a time.</p></div>
+        <a href="#items" class="banner-link">Explore the board ↗</a>
+    </section>
+</main>
+
+<footer class="footer">
+    <a href="/" class="brand footer-brand"><span class="brand-icon">C<span>↗</span></span><span>Campus<span class="brand-accent">Loop</span></span></a>
+    <p>Built for students, powered by community. ✦</p>
+    <a href="#report">Have an item to report? →</a>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
